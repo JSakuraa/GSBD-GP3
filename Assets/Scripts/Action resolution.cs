@@ -21,8 +21,8 @@ public class Actionresolution : MonoBehaviour
     {  1,  1, -1, -1,  0,  0,  0}
     };
 
-    public void act()
-
+    public static void act()
+    // testing function
     {
         Chord c = new Chord(MusicalNote.A, MusicalNote.B, MusicalNote.C);
 
@@ -33,9 +33,9 @@ public class Actionresolution : MonoBehaviour
         Action a = new Action(c, m);
         c.notes[2] = MusicalNote.F;
         print(a);
-        MusicalNote[] xxx= { MusicalNote.A, MusicalNote.F, MusicalNote.D };
+        MusicalNote[] xxx = { MusicalNote.A, MusicalNote.F, MusicalNote.D };
         Chord c2 = new Chord(xxx);
-        MusicalNote[] xxx2= { MusicalNote.G, MusicalNote.A, MusicalNote.C, MusicalNote.A };
+        MusicalNote[] xxx2 = { MusicalNote.G, MusicalNote.A, MusicalNote.C, MusicalNote.A };
         Melody m2 = new Melody(xxx2);
         Action a2 = new Action(c2, m2);
         print(a2);
@@ -43,9 +43,20 @@ public class Actionresolution : MonoBehaviour
         string enumString = "A";
         MusicalNote note = (MusicalNote)System.Enum.Parse(typeof(MusicalNote), enumString);
         print(MusicalNote.A == note);
-        resolve_actions(a, a2);
+        print(GenerateArrayDefinitionString1D(resolve_actions(a, a2)));
+        
     }
+    public static Action[] getsamepleActions()
+    {
+        Chord c = new Chord(MusicalNote.A, MusicalNote.B, MusicalNote.C);
+        Melody m = new Melody(MusicalNote.A, MusicalNote.B, MusicalNote.C, MusicalNote.D);
+        Action a = new Action(c, m);
 
+        Chord c2 = new Chord(MusicalNote.A, MusicalNote.B, MusicalNote.C);
+        Melody m2 = new Melody(MusicalNote.A, MusicalNote.B, MusicalNote.C, MusicalNote.D);
+        Action a2 = new Action(c, m);
+        return new Action[] { a,a2 };
+    }
     public static double[] resolve_actions(Action a1, Action a2)
     {
         double[,] temp_res_matrix = base_resolution_matrix.Clone() as double[,];
@@ -150,7 +161,20 @@ public static string GenerateArrayDefinitionString1D<T>(T[] array)//thank you Go
         return $"{{{joinedElements}}}";
     }
 
+    [ContextMenu("Perform a quick functionality test")]
+    void quicktest()
+    {
+        Debug.Log("functionality test");
+        // Add your editor-specific logic here
+        //act();
+        print("get actions");
+        Action[] a=getsamepleActions();
+        Action a1 = a[0];
+        Action a2 = a[1];
+        print(a1);
+        print(a2);
 
+    }
 
 
 

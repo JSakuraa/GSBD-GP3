@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace MusicDefinitions
 {
+
     public enum MusicalNote
     {
         G = 0, B = 1, D = 2, F = 3, C = 4, E = 5, A = 6
@@ -17,6 +18,13 @@ namespace MusicDefinitions
             notes[0] = n1;
             notes[1] = n2;
             notes[2] = n3;
+        }
+        public Chord(int n1, int n2, int n3)
+        {
+            notes = new MusicalNote[3];
+            notes[0] = (MusicalNote)n1;
+            notes[1] = (MusicalNote)n2;
+            notes[2] = (MusicalNote)n3;
         }
         public Chord(MusicalNote[] n)
         {
@@ -41,6 +49,14 @@ namespace MusicDefinitions
             notes[1] = n2;
             notes[2] = n3;
             notes[3] = n4;
+        }
+        public Melody(int n1, int n2, int n3, int n4)
+        {
+            notes = new MusicalNote[4];
+            notes[0] = (MusicalNote)n1;
+            notes[1] = (MusicalNote)n2;
+            notes[2] = (MusicalNote)n3;
+            notes[3] = (MusicalNote)n4;
         }
         public Melody(MusicalNote[] n)
         {
@@ -75,7 +91,92 @@ namespace MusicDefinitions
 
 }
 
-public class Translations: MonoBehaviour
+namespace BattleFefinitions
+{
+    public class MelodyEffect
+    {
+        public string name;
+        public void apply(Player self, Player enemy, double potency)
+        {
+            return;
+        }
+        public override string ToString()
+        {
+            return $"Melody effect: {name}";
+        }
+    }
+    public class TouchOfDeath : MelodyEffect
+    {
+        public TouchOfDeath()
+        {
+            name = "Touch of Death";
+        }
+        new public void apply(Player self, Player enemy, double potency)
+        {
+            if (potency >= 4)
+            {
+                enemy.health = 0;
+            }
+
+        }
+    }
+    public class PlayerEffect
+    {
+        public string name;
+        Player carrier;
+        public void apply(Player self)
+        {
+            return;
+        }
+        public override string ToString()
+        {
+            return $"Player effect: {name}";
+        }
+    }
+    public class DoT : PlayerEffect
+    {
+        public DoT()
+        {
+            name = "Damage over time";
+        }
+        Player carrier;
+        double potency = 1;
+        new public void apply(Player self)
+        {
+            carrier.health -= potency;
+        }
+    }
+    public class SpecialMelody
+    {
+        public Melody melody;
+        public MelodyEffect effect;
+        public SpecialMelody()
+        {
+
+        }
+        public SpecialMelody(Melody m, MelodyEffect e)
+        {
+            melody = m;
+            effect = e;
+        }
+        public override string ToString()
+        {
+            return $"Special Melody: {name}, melody: {melody}, melody effect:{effect}";
+        }
+    }
+    public class Execute : SpecialMelody
+    {
+        public Execute():base()
+        {
+            melody  = new Melody(0, 1, 2, 3);
+            effect  = new TouchOfDeath();
+            
+        }
+    }
+}
+
+
+public class Translations : MonoBehaviour
 {
     public static MusicalNote note_from_char(char s)
     {
@@ -91,7 +192,7 @@ public class Translations: MonoBehaviour
         {
             notes[i] = note_from_char(character);
             i++;
-            }
+        }
         return notes;
     }
 }
