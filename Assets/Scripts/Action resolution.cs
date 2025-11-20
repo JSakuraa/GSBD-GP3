@@ -1,16 +1,13 @@
-using UnityEngine;
+using BattleFefinitions;
 using MusicDefinitions;
-
+using UnityEngine;
 
 public class Actionresolution : MonoBehaviour
+//decides which note wins in a note vs note duel
 {
-    [Header("Player 1 health")]
-    [Tooltip("Player 1 health")]
-    public int player1_health = 10;
-    [Header("Player 2 health")]
-    [Tooltip("Player 2 health")]
-    public int player2_health = 10;
-
+    public static NoteEffect[] note_effects= {
+        NoteEffect.Damage,NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Damage,NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Heal
+    };
     static double[,] base_resolution_matrix = {
     {  0,  0,  1,  1, -1, -1, -1},
     {  0,  0,  1,  1, -1, -1, -1},
@@ -75,7 +72,7 @@ public class Actionresolution : MonoBehaviour
         print("Applying chord effects");
         */
         chord_effects(a1.chord, a2.chord, temp_res_matrix);
-        //print(GenerateArrayDefinitionString(temp_res_matrix));
+        Debug.Log($"Post chord alteration resolutions: \n{GenerateArrayDefinitionString(temp_res_matrix)}");
         double[] outputs = resolve_melodies(a1.melody, a2.melody, temp_res_matrix);
         //print("melody battle outputs");
         //print(GenerateArrayDefinitionString1D(outputs));

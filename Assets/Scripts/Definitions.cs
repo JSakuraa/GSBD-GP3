@@ -1,3 +1,4 @@
+using BattleFefinitions;
 using MusicDefinitions;
 using UnityEngine;
 
@@ -9,6 +10,12 @@ namespace MusicDefinitions
     {
         G = 0, B = 1, D = 2, F = 3, C = 4, E = 5, A = 6
     }
+    public enum NoteEffect
+    {
+        Heal = 0, LifeSteal= 1,Damage=2
+    }
+   
+
     public class Chord
     {
         public MusicalNote[] notes { get; set; }
@@ -70,14 +77,42 @@ namespace MusicDefinitions
         {
             return $"Melody notes: {notes[0]}, {notes[1]}, {notes[2]}, {notes[3]}";
         }
+        public bool extEquals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+        {
+            return false;
+        }
+
+        Melody other = (Melody)obj;
+        if (notes.Length != other.notes.Length)
+            {
+                return false;
+        }
+        for (int j = 0; j < notes.Length; j++)
+            {
+                if (notes[j] != other.notes[j])
+                {
+                    return false;
+                }
+            }
+        return true;
+    }
     }
 
     public class Action
     {
+        public Player player;
         public Chord chord { get; set; }
         public Melody melody { get; set; }
         public Action(Chord c, Melody m)
         {
+            chord = c;
+            melody = m;
+        }
+        public Action(Chord c, Melody m, Player p)
+        {
+            player = p;
             chord = c;
             melody = m;
         }
@@ -163,6 +198,19 @@ namespace BattleFefinitions
         public override string ToString()
         {
             return $"Special Melody: {name}, melody: {melody}, melody effect:{effect}";
+        }
+        public static SpecialMelody findFromMelody(SpecialMelody[] combos, Melody m)
+        {
+            SpecialMelody target=null;
+            foreach (SpecialMelody sm in combos)
+            {
+                if (sm.melody.extEquals(m))
+                {
+                    target = sm;
+                
+                }
+            }
+            return target;
         }
     }
     public class Execute : SpecialMelody
