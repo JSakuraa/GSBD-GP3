@@ -1,6 +1,6 @@
 using UnityEngine;
 using MusicDefinitions;
-using BattleFefinitions;
+using BattleDefinitions;
 
 
 public class PlayerWraper : MonoBehaviour

@@ -1,14 +1,14 @@
-using BattleFefinitions;
+using BattleDefinitions;
 using MusicDefinitions;
 using UnityEngine;
 public class Battlestate : MonoBehaviour
 {
     [Header("Player 1 health")]
     [Tooltip("The starting health points for player 1")]
-    public double player1_health = 100;
+    public double player1_health = 8;
     [Header("Player 2 health")]
     [Tooltip("The starting health points for player 2")]
-    public double player2_health = 100;
+    public double player2_health = 8;
 
     [Header("Player 1")]
     [Tooltip("The Player 1 Player object")]
@@ -93,10 +93,11 @@ public class Battlestate : MonoBehaviour
             winner.player.enemy.health_change[j] = -potency;
 
         }
+        //adjusted scalar for damage to be 3 per win
         if (neffect == NoteEffect.Damage)
         {
             winner.player.health_change[j] = 0;
-            winner.player.enemy.health_change[j] = -2 * potency;
+            winner.player.enemy.health_change[j] = -3 * potency;
 
         }
     }

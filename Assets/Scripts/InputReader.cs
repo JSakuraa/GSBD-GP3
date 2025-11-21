@@ -1,4 +1,4 @@
-using BattleFefinitions;
+using BattleDefinitions;
 using MusicDefinitions;
 using UnityEngine;
 using TMPro; // For standard UI InputField

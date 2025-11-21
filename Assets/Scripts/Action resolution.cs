@@ -1,22 +1,26 @@
-using BattleFefinitions;
+using BattleDefinitions;
 using MusicDefinitions;
 using UnityEngine;
 
 public class Actionresolution : MonoBehaviour
 //decides which note wins in a note vs note duel
 {
+    //fixing note effect to match mapping
     public static NoteEffect[] note_effects= {
-        NoteEffect.Damage,NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Damage,NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Heal
+        NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Damage,NoteEffect.Heal,NoteEffect.Damage
     };
+
+    //fixed matrix to match the note enum in definitions
     static double[,] base_resolution_matrix = {
-    {  0,  0,  1,  1, -1, -1, -1},
-    {  0,  0,  1,  1, -1, -1, -1},
-    { -1, -1,  0,  0,  1,  1,  1},
-    { -1, -1,  0,  0,  1,  1,  1},
-    {  1,  1, -1, -1,  0,  0,  0},
-    {  1,  1, -1, -1,  0,  0,  0},
-    {  1,  1, -1, -1,  0,  0,  0}
-    };
+    // C   D   E   F   G   A   B
+    {  0, -1,  0, -1,  1,  0,  1}, //C 
+    {  1,  0,  1,  0, -1,  1, -1}, //D 
+    {  0, -1,  0, -1,  1,  0,  1}, //E 
+    {  1,  0,  1,  0, -1,  1, -1}, //F 
+    { -1,  1, -1,  1,  0, -1,  0}, //G 
+    {  0, -1,  0, -1,  1,  0,  1}, //A 
+    { -1,  1, -1,  1,  0, -1,  0}  //B 
+};
 
     public static void act()
     // testing function

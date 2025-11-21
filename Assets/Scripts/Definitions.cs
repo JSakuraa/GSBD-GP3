@@ -1,4 +1,4 @@
-using BattleFefinitions;
+using BattleDefinitions;
 using MusicDefinitions;
 using UnityEngine;
 
@@ -8,11 +8,14 @@ namespace MusicDefinitions
 
     public enum MusicalNote
     {
-        G = 0, B = 1, D = 2, F = 3, C = 4, E = 5, A = 6
+
+        //Notes did not correspond to basic C major scale, fixed.
+
+             C = 0, D = 1, E = 2, F = 3, G = 4, A = 5, B = 6
     }
     public enum NoteEffect
     {
-        Heal = 0, LifeSteal= 1,Damage=2
+        Heal = 0, LifeSteal= 1, Damage=2
     }
    
 
@@ -126,7 +129,7 @@ namespace MusicDefinitions
 
 }
 
-namespace BattleFefinitions
+namespace BattleDefinitions
 {
     public class MelodyEffect
     {
