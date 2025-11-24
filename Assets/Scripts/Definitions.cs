@@ -160,6 +160,128 @@ namespace BattleDefinitions
 
         }
     }
+
+    //Adding in the real combos we want, these are all templates to fill in. We need to change the combo logic to match the design doc.
+
+    //First combo set is for the "Jazz Musician" Class
+
+        public class GamblerCombo : MelodyEffect
+        //required notes in melody: F A B
+    {
+        public GamblerCombo()
+        {
+            name = "Gambler's Combo";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= 0) && (self.health <= 100))
+            {
+                enemy.health = 0;
+                Debug.Log($"Doubles potency of all values for whichever player won more note pairs this phrase.");
+            }
+
+        }
+    }
+
+    public class UnstableCombo : MelodyEffect
+    //required notes in melody: D F B
+    {
+        public UnstableCombo()
+        {
+            name = "Instability Combo";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= 0) && (self.health <= 100))
+            {
+                enemy.health = 0;
+                Debug.Log($"Flips all heal and damage actions played this turn.");
+            }
+
+        }
+    }
+
+    public class AttackerCombo : MelodyEffect
+    //required notes in melody: D F A
+    {
+        public AttackerCombo()
+        {
+            name = "Attacker's Combo";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= 0) && (self.health <= 100))
+            {
+                enemy.health = 0;
+                Debug.Log($"On the next turn, doubles potency of all damaging actions played.");
+            }
+
+        }
+    }
+
+    //second set of combos is for the "Classical Musician" class
+
+    public class PeacefulCombo : MelodyEffect
+    //required notes in melody: C F G
+    {
+        public PeacefulCombo()
+        {
+            name = "Peaceful Combo";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= 0) && (self.health <= 100))
+            {
+                enemy.health = 0;
+                Debug.Log($"Halves all potencies this turn.");
+            }
+
+        }
+    }
+
+    public class AngstyCombo : MelodyEffect
+    //required notes in melody: D A B
+    {
+        public AngstyCombo()
+        {
+            name = "Angsty Combo";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= 0) && (self.health <= 100))
+            {
+                enemy.health = 0;
+                Debug.Log($"Doubles all potencies this turn.");
+            }
+
+        }
+    }
+
+    public class DefenderCombo : MelodyEffect
+    //required notes in melody: D A B
+    {
+        public DefenderCombo()
+        {
+            name = "Angsty Combo";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= 0) && (self.health <= 100))
+            {
+                enemy.health = 0;
+                Debug.Log($"Next turn, doubles potency of all healing effects.");
+            }
+
+        }
+    }
+
+
     public class PlayerEffect
     {
         public string name;
