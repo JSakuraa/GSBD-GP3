@@ -24,7 +24,7 @@ public class InputReader : MonoBehaviour
         Action a1 = new Action(new Chord(Translations.notes_from_string(chord1.text)), new Melody(Translations.notes_from_string(melody1.text)), bs.player1);
         Action a2 = new Action(new Chord(Translations.notes_from_string(chord2.text)), new Melody(Translations.notes_from_string(melody2.text)), bs.player2);
         //Debug.Log("User entered: " + chord1_text);
-        Battlestate.battle(a1, a2);
+        bs.battle(a1, a2);
         if (displayText != null)
         {
             displayText.text = $"P1 health {bs.player1.health} | P2 health {bs.player2.health}";

@@ -3344,6 +3344,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91c6817e0c47b4180bc67b7afda50438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MyContextMenuScript
+  bs: {fileID: 864027765}
 --- !u!4 &1006025508
 Transform:
   m_ObjectHideFlags: 0

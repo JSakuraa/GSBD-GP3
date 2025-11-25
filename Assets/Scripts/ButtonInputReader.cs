@@ -162,7 +162,8 @@ public class ButtonInputReader : MonoBehaviour
         currentPhase = TurnPhase.BattleResolution;
 
         // Execute the battle
-        Battlestate.battle(player1Action, player2Action);
+        bs.battle(player1Action, player2Action);
+        Debug.Log(bs.last_update); // last_update is a object with all relative info, and an overriden toString
 
         // Update health display
         UpdateDisplay();
