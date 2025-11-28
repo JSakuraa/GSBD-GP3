@@ -50,6 +50,11 @@ public class Battlestate : MonoBehaviour
         double potency = 0;
         Action winner = a1;
         potency = getPotency(outputs);
+        if (potency == 0)
+        {
+            Debug.Log("Tie, no melody resolved");
+            return;
+        }
         last_update.winning_melody_effect = null;
 
         if (potency <= 0)
@@ -102,21 +107,21 @@ public class Battlestate : MonoBehaviour
         Debug.Log($"winner {winner.player.name} winning note: {winNote}, with effect {neffect} and potency {potency}");
         if (neffect == NoteEffect.Heal)
         {
-            winner.player.health_change[j] = 2 * potency;
+            winner.player.health_change[j] = 2 * potency*winner.player.heal_power;
             winner.player.enemy.health_change[j] = 0;
 
         }
         if (neffect == NoteEffect.LifeSteal)
         {
-            winner.player.health_change[j] = potency;
-            winner.player.enemy.health_change[j] = -potency;
+            winner.player.health_change[j] = potency*winner.player.life_steal_power;
+            winner.player.enemy.health_change[j] = -potency*winner.player.life_steal_power;
 
         }
         //adjusted scalar for damage to be 3 per win
         if (neffect == NoteEffect.Damage)
         {
             winner.player.health_change[j] = 0;
-            winner.player.enemy.health_change[j] = -3 * potency;
+            winner.player.enemy.health_change[j] = -3 * potency*winner.player.damage_power;
 
         }
         return (winner.player, neffect);

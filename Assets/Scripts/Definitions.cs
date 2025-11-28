@@ -145,17 +145,142 @@ namespace BattleDefinitions
     }
     public class TouchOfDeath : MelodyEffect
     {
+        double min_potency;
+        double low_hp;
         public TouchOfDeath()
         {
+            min_potency = 0;
+            low_hp = 100;
+            name = "Touch of Death";
+        }
+        public TouchOfDeath(double mp, double lhp)
+        {
+            min_potency = mp;
+            low_hp = lhp;
             name = "Touch of Death";
         }
         public override void apply(Player self, Player enemy, double potency)
         {
             base.apply(self, enemy, potency);
-            if ((potency >= 0) && (self.health <= 100))
+            if ((potency >= min_potency) && (self.health <= low_hp))
             {
                 enemy.health = 0;
                 Debug.Log($"Touch of death kills {enemy.name}");
+            }
+
+        }
+    }
+
+    public class HealingSong : MelodyEffect
+    {
+        double min_potency;
+        double heal_hp;
+        public HealingSong()
+        {
+            min_potency = 0;
+            heal_hp = 100;
+            name = "Healing Song";
+        }
+        public HealingSong(double mp, double lhp)
+        {
+            min_potency = mp;
+            heal_hp = lhp;
+            name = "Healing Song";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= min_potency))
+            {
+                self.changeHealth(heal_hp * potency);
+                Debug.Log($"Player {self.name} heals from song: {heal_hp * potency}");
+            }
+
+        }
+    }
+
+    public class DamagingSong : MelodyEffect
+    {
+        double min_potency;
+        double damage_hp;
+        public DamagingSong()
+        {
+            min_potency = 0;
+            damage_hp = 10;
+            name = "Damaging Song";
+        }
+        public DamagingSong(double mp, double lhp)
+        {
+            min_potency = mp;
+            damage_hp = lhp;
+            name = "Damaging Song";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= min_potency))
+            {
+                enemy.changeHealth(-damage_hp * potency);
+                Debug.Log($"Player {enemy.name} takes damage from song: {damage_hp * potency}");
+            }
+
+        }
+    }
+
+    public class Amplify : MelodyEffect
+    {
+        double min_potency;
+        double amplify_mult;
+        public Amplify()
+        {
+            min_potency = 0;
+            amplify_mult = 2;
+            name = "Amplify";
+        }
+        public Amplify(double mp, double lhp)
+        {
+            min_potency = mp;
+            amplify_mult = lhp;
+            name = "Amplify";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= min_potency))
+            {
+                self.damage_power *= amplify_mult;
+                self.heal_power *= amplify_mult;
+                self.life_steal_power *= amplify_mult;
+                Debug.Log($"Player {self.name} is amplified by: {amplify_mult}");
+            }
+
+        }
+    }
+    public class Condence : MelodyEffect
+    {
+        double min_potency;
+        double amplify_mult;
+        public Condence()
+        {
+            min_potency = 0;
+            amplify_mult = 1 / 2;
+            name = "Condence";
+        }
+        public Condence(double mp, double lhp)
+        {
+            min_potency = mp;
+            amplify_mult = lhp;
+            name = "Condence";
+        }
+        public override void apply(Player self, Player enemy, double potency)
+        {
+            base.apply(self, enemy, potency);
+            if ((potency >= min_potency))
+            {
+                enemy.damage_power *= amplify_mult;
+                enemy.heal_power *= amplify_mult;
+                enemy.life_steal_power *= amplify_mult;
+                Debug.Log($"Player {enemy.name} is condenced by: {amplify_mult}");
             }
 
         }
@@ -206,27 +331,90 @@ namespace BattleDefinitions
         }
         public static SpecialMelody findFromMelody(SpecialMelody[] combos, Melody m)
         {
-            SpecialMelody target=null;
+            SpecialMelody target = null;
             foreach (SpecialMelody sm in combos)
             {
-                if (sm.melody.extEquals(m))
+
+                if (sm.matchMelody(m))
                 {
                     target = sm;
                     Debug.Log($"found combo: {sm}");
-                
+
                 }
+
             }
             return target;
         }
+
+        virtual public bool matchMelody(Melody m)
+        {
+            if (melody.extEquals(m))
+            {
+                Debug.Log($"found combo: {this}");
+                return true;
+
+            }
+            return false;
+        }
+
+
     }
+
+    public class SpecialMelodyShort : SpecialMelody
+    {
+        //only first three notes of the melody must be played to activate the effects
+        public override bool matchMelody(Melody m)
+        {
+            if (melody.notes[0] == m.notes[0] && melody.notes[1] == m.notes[1] && melody.notes[2] == m.notes[2])
+            {
+                return true;
+            }
+            if (melody.notes[0] == m.notes[1] && melody.notes[1] == m.notes[2] && melody.notes[2] == m.notes[3])
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
     public class Execute : SpecialMelody
     {
-        public Execute():base()
-        {   
-            name="Execute";
-            melody  = new Melody(3, 3, 3, 3);
-            effect  = new TouchOfDeath();
-            
+        public Execute() : base()
+        {
+            name = "Execute";
+            melody = new Melody(3, 3, 3, 3);
+            effect = new TouchOfDeath();
+
+        }
+    }
+
+    public class ExecuteShort : SpecialMelodyShort
+    {
+        public ExecuteShort() : base()
+        {
+            name = "Execute short";
+            melody = new Melody(3, 3, 3, 3);
+            effect = new TouchOfDeath(2, 50);
+        }
+    }
+
+    public class MinorHeal : SpecialMelodyShort
+    {
+        public MinorHeal() : base()
+        {
+            name = "Minor heal";
+            melody = new Melody(0, 3, 4, 0);
+            effect = new HealingSong(0, 25);
+        }
+    }
+    
+    public class MinorAmplify : SpecialMelodyShort
+    {
+        public MinorAmplify() : base()
+        {
+            name = "Minor amplify";
+            melody = new Melody(1, 5, 6, 0);
+            effect = new Amplify(0,3);
         }
     }
 }

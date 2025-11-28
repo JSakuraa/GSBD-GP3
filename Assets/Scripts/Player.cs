@@ -27,30 +27,80 @@ public class Player
     public string name="None";
     public Monster monster;
 
+    public double damage_power = 10;
+    public double heal_power = 8;
+    public double life_steal_power = 6;
+
+
+    public double damage_mult = 1;
+
+    public double heal_mult=1;
+
+    public double damage_mult_mod=1;
+
+    public double heal_mult_mod=1;
+
     public double[] health_change = { 0, 0, 0, 0 };
 
     public void applyHealthChange()
     {
+        apply_mult();
         for (int j = 0; j < health_change.Length; j++)
         {
             if (health + health_change[j] >= max_health)
             {
-
+                health = max_health;
             }
-            else if (health + health_change[j]<=0)
+            else if (health + health_change[j] <= 0)
             {
                 health = 0;
             }
-            else {
+            else
+            {
                 health += health_change[j];
             }
             //health_change[j] = 0;
         }
     }
 
+    public void changeHealth(double hpchange)
+    {
+        if (health + hpchange >= max_health)
+            {
+                health = max_health;
+            }
+            else if (health + hpchange <= 0)
+            {
+                health = 0;
+            }
+            else
+            {
+                health += hpchange;
+            }
+    }
+
+    void apply_mult()
+    {
+        for (int j = 0; j < health_change.Length; j++)
+        {
+            if (health_change[j] > 0)
+            {
+                health_change[j] *= heal_mult * heal_mult_mod;
+            }
+            if (health_change[j] < 0)
+            {
+                health_change[j] *= damage_mult * damage_mult_mod;
+            }
+        }
+        damage_mult_mod = 1;
+        heal_mult_mod = 1;
+        Debug.Log("post apply mult: "+info());
+    }
+
     public string info()
     {
-        return $"PLayer {name} of type {type}, health: {health}, monster {monster} health change: {Actionresolution.GenerateArrayDefinitionString1D(health_change)}";
+        return $"PLayer {name} of type {type}, health: {health}, monster {monster} health change: {Actionresolution.GenerateArrayDefinitionString1D(health_change)}\n" +
+        $"Damage {damage_power}, Heal {heal_power}, Life steal {life_steal_power}";
     }
 
 }
@@ -71,7 +121,7 @@ public class Unseen : Monster
     public Unseen()
     {
         name = "the Unseen";
-        combos = new SpecialMelody[] { new Execute() };
+        combos = new SpecialMelody[] { new Execute(), new MinorHeal(), new MinorAmplify() };
     }
     public override string ToString()
         {
