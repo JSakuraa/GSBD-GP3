@@ -10,7 +10,7 @@ public class SceneController : MonoBehaviour
 
     public void LoadGameScene()
     {
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene("NewGameScene");
     }
 
     public void LoadGameOverScreen()
