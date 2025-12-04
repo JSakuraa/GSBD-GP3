@@ -6,9 +6,7 @@ using TMPro; // For standard UI InputField
 
 public class InputReader : MonoBehaviour
 {
-    public TMP_InputField chord1;
     public TMP_InputField melody1;
-    public TMP_InputField chord2;
     public TMP_InputField melody2; // Drag your InputField here in the Inspector
     // OR
     // public TMP_InputField inputField; // If using TextMeshPro
@@ -19,10 +17,8 @@ public class InputReader : MonoBehaviour
     public Battlestate bs;
     public void OnButtonClick()
     {
-        string chord1_text = chord1.text;
-        string chord2_text = chord2.text;
-        Action a1 = new Action(new Chord(Translations.notes_from_string(chord1.text)), new Melody(Translations.notes_from_string(melody1.text)), bs.player1);
-        Action a2 = new Action(new Chord(Translations.notes_from_string(chord2.text)), new Melody(Translations.notes_from_string(melody2.text)), bs.player2);
+        Action a1 = new Action(new Melody(Translations.notes_from_string(melody1.text)), bs.player1);
+        Action a2 = new Action(new Melody(Translations.notes_from_string(melody2.text)), bs.player2);
         //Debug.Log("User entered: " + chord1_text);
         bs.battle(a1, a2);
         if (displayText != null)

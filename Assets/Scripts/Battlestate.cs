@@ -36,7 +36,7 @@ public class Battlestate : MonoBehaviour
         player2.enemy = player1;
         last_update = new update_info();
         last_update.player1 = player1;
-        last_update.player2 = player2;   
+        last_update.player2 = player2;
     }
 
     // Update is called once per frame
@@ -69,7 +69,7 @@ public class Battlestate : MonoBehaviour
             last_update.winning_melody_effect = effect.effect;
         }
         last_update.melody_winner = winner.player;
-        
+
     }
     public double getPotency(double[] outputs)
     {
@@ -107,21 +107,21 @@ public class Battlestate : MonoBehaviour
         Debug.Log($"winner {winner.player.name} winning note: {winNote}, with effect {neffect} and potency {potency}");
         if (neffect == NoteEffect.Heal)
         {
-            winner.player.health_change[j] = 2 * potency*winner.player.heal_power;
+            winner.player.health_change[j] = 2 * potency * winner.player.heal_power;
             winner.player.enemy.health_change[j] = 0;
 
         }
         if (neffect == NoteEffect.LifeSteal)
         {
-            winner.player.health_change[j] = potency*winner.player.life_steal_power;
-            winner.player.enemy.health_change[j] = -potency*winner.player.life_steal_power;
+            winner.player.health_change[j] = potency * winner.player.life_steal_power;
+            winner.player.enemy.health_change[j] = -potency * winner.player.life_steal_power;
 
         }
         //adjusted scalar for damage to be 3 per win
         if (neffect == NoteEffect.Damage)
         {
             winner.player.health_change[j] = 0;
-            winner.player.enemy.health_change[j] = -3 * potency*winner.player.damage_power;
+            winner.player.enemy.health_change[j] = -3 * potency * winner.player.damage_power;
 
         }
         return (winner.player, neffect);
@@ -132,6 +132,9 @@ public class Battlestate : MonoBehaviour
         Debug.Log($"Player 2 is {a2.player.name} and chose action {a2} ");
         double[] outputs = Actionresolution.resolve_actions(a1, a2);
         Debug.Log($"action outcomes: {Actionresolution.GenerateArrayDefinitionString1D(outputs)}");
+
+        last_update.resolution_outcomes = outputs;
+
         computeHealthChange(a1, a2, outputs);
         applyMelodyEffect(a1, a2, outputs);
         a1.player.applyHealthChange();
@@ -146,7 +149,7 @@ public class Battlestate : MonoBehaviour
 
     public void lastBattleOutcome()
     {
-        
+
     }
 }
 
@@ -162,10 +165,13 @@ public class update_info
     public Player player1;
     public Player player2;
 
+    public double[] resolution_outcomes;
+
     public override string ToString()
     {
         string s = "none";
-        if (winning_melody_effect != null) {
+        if (winning_melody_effect != null)
+        {
             s = $"{winning_melody_effect}";
         }
         return $"The last battle had the following results:\n" +

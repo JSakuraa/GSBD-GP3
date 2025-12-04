@@ -8,50 +8,21 @@ namespace MusicDefinitions
 
     public enum MusicalNote
     {
-
         //Notes did not correspond to basic C major scale, fixed.
-
-             C = 0, D = 1, E = 2, F = 3, G = 4, A = 5, B = 6
+        C = 0, D = 1, E = 2, F = 3, G = 4, A = 5, B = 6
     }
+
     public enum NoteEffect
     {
-        Heal = 0, LifeSteal= 1, Damage=2
+        Heal = 0, LifeSteal = 1, Damage = 2
     }
-   
 
-    public class Chord
-    {
-        public MusicalNote[] notes { get; set; }
-        public Chord(MusicalNote n1, MusicalNote n2, MusicalNote n3)
-        {
-            notes = new MusicalNote[3];
-            notes[0] = n1;
-            notes[1] = n2;
-            notes[2] = n3;
-        }
-        public Chord(int n1, int n2, int n3)
-        {
-            notes = new MusicalNote[3];
-            notes[0] = (MusicalNote)n1;
-            notes[1] = (MusicalNote)n2;
-            notes[2] = (MusicalNote)n3;
-        }
-        public Chord(MusicalNote[] n)
-        {
-            notes = new MusicalNote[3];
-            notes[0] = n[0];
-            notes[1] = n[1];
-            notes[2] = n[2];
-        }
-        public override string ToString()
-        {
-            return $"Chord notes: {notes[0]}, {notes[1]}, {notes[2]}";
-        }
-    }
+    // REMOVED: Chord class entirely
 
     public class Melody
     {
         public MusicalNote[] notes { get; set; }
+
         public Melody(MusicalNote n1, MusicalNote n2, MusicalNote n3, MusicalNote n4)
         {
             notes = new MusicalNote[4];
@@ -60,6 +31,7 @@ namespace MusicDefinitions
             notes[2] = n3;
             notes[3] = n4;
         }
+
         public Melody(int n1, int n2, int n3, int n4)
         {
             notes = new MusicalNote[4];
@@ -68,6 +40,7 @@ namespace MusicDefinitions
             notes[2] = (MusicalNote)n3;
             notes[3] = (MusicalNote)n4;
         }
+
         public Melody(MusicalNote[] n)
         {
             notes = new MusicalNote[4];
@@ -76,57 +49,57 @@ namespace MusicDefinitions
             notes[2] = n[2];
             notes[3] = n[3];
         }
+
         public override string ToString()
         {
             return $"Melody notes: {notes[0]}, {notes[1]}, {notes[2]}, {notes[3]}";
         }
-        public bool extEquals(object obj)
-    {
-        if (obj == null || GetType() != obj.GetType())
-        {
-            return false;
-        }
 
-        Melody other = (Melody)obj;
-        if (notes.Length != other.notes.Length)
+        public bool extEquals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
             {
                 return false;
-        }
-        for (int j = 0; j < notes.Length; j++)
+            }
+
+            Melody other = (Melody)obj;
+            if (notes.Length != other.notes.Length)
+            {
+                return false;
+            }
+            for (int j = 0; j < notes.Length; j++)
             {
                 if (notes[j] != other.notes[j])
                 {
                     return false;
                 }
             }
-        return true;
-    }
+            return true;
+        }
     }
 
     public class Action
     {
         public Player player;
-        public Chord chord { get; set; }
         public Melody melody { get; set; }
-        public Action(Chord c, Melody m)
+
+        // Constructor with only melody (no chord)
+        public Action(Melody m)
         {
-            chord = c;
             melody = m;
         }
-        public Action(Chord c, Melody m, Player p)
+
+        public Action(Melody m, Player p)
         {
             player = p;
-            chord = c;
             melody = m;
         }
+
         public override string ToString()
         {
-            return $"Chord: {chord}, Melody: {melody}";
+            return $"Melody: {melody}";
         }
     }
-
-
-
 }
 
 namespace BattleDefinitions
@@ -258,7 +231,7 @@ namespace BattleDefinitions
         }
     }
 
-    public class Poison: MelodyEffect
+    public class Poison : MelodyEffect
     {
         double min_potency;
         double low_hp;
@@ -288,7 +261,7 @@ namespace BattleDefinitions
             base.apply(self, enemy, potency);
             if ((potency >= min_potency) && (self.health <= low_hp))
             {
-                enemy.effects.Add(new DoT(damage * potency,enemy));
+                enemy.effects.Add(new DoT(damage * potency, enemy));
                 Debug.Log($"Poison applied damage over time on {enemy.name}");
             }
 
@@ -550,18 +523,17 @@ namespace BattleDefinitions
             effect = new HealingSong(0, 25);
         }
     }
-    
+
     public class MinorAmplify : SpecialMelodyShort
     {
         public MinorAmplify() : base()
         {
             name = "Minor amplify";
             melody = new Melody(1, 5, 6, 0);
-            effect = new Amplify(0,3);
+            effect = new Amplify(0, 3);
         }
     }
 }
-
 
 public class Translations : MonoBehaviour
 {
@@ -569,8 +541,8 @@ public class Translations : MonoBehaviour
     {
         MusicalNote note = (MusicalNote)System.Enum.Parse(typeof(MusicalNote), s.ToString());
         return note;
-
     }
+
     public static MusicalNote[] notes_from_string(string s)
     {
         MusicalNote[] notes = new MusicalNote[s.Length];

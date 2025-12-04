@@ -3,21 +3,17 @@ using MusicDefinitions;
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
-using UnityEngine.InputSystem;
 
 public class ButtonInputReader : MonoBehaviour
 {
     [Header("UI References")]
-    public TMPro.TMP_Text displayText;
     public TMPro.TMP_Text turnIndicatorText;
-    public TMPro.TMP_Text chordDisplayText;
-    public TMPro.TMP_Text melodyDisplayText;
 
     [Header("Button Panels")]
-    public GameObject chordButtons;
     public GameObject noteButtons;
     public GameObject confirmButton;
     public GameObject backspaceButton;
+    public GameObject playbackButton;
 
     [Header("Battle State")]
     public Battlestate bs;
@@ -26,42 +22,30 @@ public class ButtonInputReader : MonoBehaviour
     public UIManager uiManager;
 
     // Track current turn and input state
-    private enum TurnPhase { Player1Chord, Player1Melody, Player2Chord, Player2Melody, BattleResolution }
-    private TurnPhase currentPhase = TurnPhase.Player1Chord;
+    private enum TurnPhase { FirstPlayerMelody, SecondPlayerMelody, BattleResolution }
+    private TurnPhase currentPhase = TurnPhase.FirstPlayerMelody;
+
+    // Track who goes first this round
+    private bool player1GoesFirst = true;
 
     // Store selected notes
-    private Chord selectedChord;
-    private string selectedChordName; // Track chord name for UI
     private List<MusicalNote> currentMelodyNotes = new List<MusicalNote>();
 
     // Store complete actions
     private Action player1Action;
     private Action player2Action;
 
-    // Preset chords
-    private Dictionary<string, Chord> presetChords = new Dictionary<string, Chord>()
-    {
-        { "CMajor", new Chord(MusicalNote.C, MusicalNote.E, MusicalNote.G) },
-        { "DMinor", new Chord(MusicalNote.D, MusicalNote.F, MusicalNote.A) },
-        { "EMinor", new Chord(MusicalNote.E, MusicalNote.G, MusicalNote.B) },
-        { "FMajor", new Chord(MusicalNote.F, MusicalNote.A, MusicalNote.C) },
-        { "GMajor", new Chord(MusicalNote.G, MusicalNote.B, MusicalNote.D) },
-        { "AMinor", new Chord(MusicalNote.A, MusicalNote.C, MusicalNote.E) },
-        { "BDim", new Chord(MusicalNote.B, MusicalNote.D, MusicalNote.F) }
-    };
-
+    // Constants
     private const int MELODY_SIZE = 4;
 
     void Start()
     {
         // Initialize battle state players first
-        bs.init();  // Make sure players are created
+        bs.init();
 
         // Connect PlayerUI to game logic Players
         if (uiManager != null)
         {
-            // The playerName in PlayerUI should match the names in Battlestate
-            // Or we can just directly link them
             ConnectPlayersToUI();
 
             // Initialize health bars
@@ -69,18 +53,27 @@ public class ButtonInputReader : MonoBehaviour
             uiManager.AdjustHealthBar(uiManager.player2, (int)bs.player2.health);
         }
 
-        UpdateDisplay();
         UpdateTurnIndicator();
-        ShowChordButtons();
+        ShowMelodyButtons();
     }
 
-    // Add this Update method to ButtonInputReader
+    private void ConnectPlayersToUI()
+    {
+        if (uiManager.player1 == null || uiManager.player2 == null)
+        {
+            Debug.LogError("PlayerUI objects not assigned in UIManager!");
+            return;
+        }
+
+        uiManager.player1.playerName = bs.player1.name;
+        uiManager.player2.playerName = bs.player2.name;
+    }
+
     void Update()
     {
-        // Get current keyboard state
-        var keyboard = Keyboard.current;
+        var keyboard = UnityEngine.InputSystem.Keyboard.current;
 
-        if (keyboard == null) return;  // No keyboard connected
+        if (keyboard == null) return;
 
         // Keyboard input for notes
         if (keyboard.cKey.wasPressedThisFrame)
@@ -112,123 +105,54 @@ public class ButtonInputReader : MonoBehaviour
             OnNoteButtonClicked("B");
         }
 
-        // Keyboard input for chords (number keys 1-7)
-        if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("CMajor");
-        }
-        else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("DMinor");
-        }
-        else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("EMinor");
-        }
-        else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("FMajor");
-        }
-        else if (keyboard.digit5Key.wasPressedThisFrame || keyboard.numpad5Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("GMajor");
-        }
-        else if (keyboard.digit6Key.wasPressedThisFrame || keyboard.numpad6Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("AMinor");
-        }
-        else if (keyboard.digit7Key.wasPressedThisFrame || keyboard.numpad7Key.wasPressedThisFrame)
-        {
-            OnChordButtonClicked("BDim");
-        }
-
-        // Backspace key
         if (keyboard.backspaceKey.wasPressedThisFrame)
         {
             OnBackspaceButtonClicked();
         }
 
-        // Enter/Return key for confirm
         if (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame)
         {
             OnConfirmButtonClicked();
         }
+
+        if (keyboard.spaceKey.wasPressedThisFrame)
+        {
+            OnPlaybackButtonClicked();
+        }
     }
 
-    private void ConnectPlayersToUI()
+    // Helper method to determine which player is currently selecting
+    private PlayerUI GetCurrentPlayer()
     {
-        // Make sure PlayerUI objects exist
-        if (uiManager.player1 == null || uiManager.player2 == null)
+        if (currentPhase == TurnPhase.FirstPlayerMelody)
         {
-            Debug.LogError("PlayerUI objects not assigned in UIManager!");
-            return;
+            return player1GoesFirst ? uiManager.player1 : uiManager.player2;
         }
-
-        // Connect them (optional, depending on if you need this link)
-        uiManager.player1.playerName = bs.player1.name;
-        uiManager.player2.playerName = bs.player2.name;
+        else if (currentPhase == TurnPhase.SecondPlayerMelody)
+        {
+            return player1GoesFirst ? uiManager.player2 : uiManager.player1;
+        }
+        return null;
     }
 
-    // Replace OnChordButtonClicked with this version that has detailed debugging:
-    public void OnChordButtonClicked(string chordName)
+    // Helper method to determine if current player is player1
+    private bool IsCurrentPlayerOne()
     {
-        if (currentPhase != TurnPhase.Player1Chord && currentPhase != TurnPhase.Player2Chord)
-            return;
-
-        if (presetChords.ContainsKey(chordName))
+        if (currentPhase == TurnPhase.FirstPlayerMelody)
         {
-            selectedChord = presetChords[chordName];
-            selectedChordName = chordName;
-            UpdateChordDisplay(chordName);
-            confirmButton.SetActive(true);
-
-            // Play chord sound through UIManager - with detailed debugging
-            if (uiManager == null)
-            {
-                Debug.LogError("UIManager is null!");
-                return;
-            }
-
-            if (uiManager.player1 == null)
-            {
-                Debug.LogError("UIManager.player1 is null!");
-                return;
-            }
-
-            if (uiManager.player2 == null)
-            {
-                Debug.LogError("UIManager.player2 is null!");
-                return;
-            }
-
-            PlayerUI currentPlayer = (currentPhase == TurnPhase.Player1Chord) ?
-                uiManager.player1 : uiManager.player2;
-
-            if (currentPlayer == null)
-            {
-                Debug.LogError("currentPlayer is null!");
-                return;
-            }
-
-            if (currentPlayer.instrument == null)
-            {
-                Debug.LogError($"currentPlayer.instrument is null for {currentPlayer.playerName}!");
-                return;
-            }
-
-            Debug.Log($"Playing chord {chordName} for {currentPlayer.playerName} on {currentPlayer.instrument.instrumentName}");
-            uiManager.PlayChord(chordName, currentPlayer);
+            return player1GoesFirst;
         }
-        else
+        else if (currentPhase == TurnPhase.SecondPlayerMelody)
         {
-            Debug.LogError($"Chord '{chordName}' not found in preset chords!");
+            return !player1GoesFirst;
         }
+        return true;
     }
 
     // Called by individual note buttons
     public void OnNoteButtonClicked(string noteName)
     {
-        if (currentPhase != TurnPhase.Player1Melody && currentPhase != TurnPhase.Player2Melody)
+        if (currentPhase != TurnPhase.FirstPlayerMelody && currentPhase != TurnPhase.SecondPlayerMelody)
             return;
 
         MusicalNote selectedNote = (MusicalNote)System.Enum.Parse(typeof(MusicalNote), noteName);
@@ -236,143 +160,204 @@ public class ButtonInputReader : MonoBehaviour
         if (currentMelodyNotes.Count < MELODY_SIZE)
         {
             currentMelodyNotes.Add(selectedNote);
-            UpdateMelodyDisplay();
+
+            // Update icon preview
+            bool isPlayer1 = IsCurrentPlayerOne();
+            uiManager.UpdateMelodyPreview(currentMelodyNotes, isPlayer1);
 
             // Play note sound through UIManager
-            PlayerUI currentPlayer = (currentPhase == TurnPhase.Player1Melody) ?
-                uiManager.player1 : uiManager.player2;
+            PlayerUI currentPlayer = GetCurrentPlayer();
 
             if (currentPlayer != null && currentPlayer.instrument != null)
             {
                 uiManager.PlayNote(noteName, currentPlayer);
             }
 
-            // Only show confirm when melody is complete
+            // Show confirm and playback when melody is complete
             if (currentMelodyNotes.Count == MELODY_SIZE)
             {
                 confirmButton.SetActive(true);
+                playbackButton.SetActive(true);
+            }
+            else
+            {
+                // Show playback as soon as there's at least one note
+                if (currentMelodyNotes.Count > 0)
+                {
+                    playbackButton.SetActive(true);
+                }
             }
         }
     }
 
+    // Called by Backspace button
     public void OnBackspaceButtonClicked()
     {
-        if (currentPhase == TurnPhase.Player1Melody || currentPhase == TurnPhase.Player2Melody)
+        if (currentPhase == TurnPhase.FirstPlayerMelody || currentPhase == TurnPhase.SecondPlayerMelody)
         {
             if (currentMelodyNotes.Count > 0)
             {
                 currentMelodyNotes.RemoveAt(currentMelodyNotes.Count - 1);
-                UpdateMelodyDisplay();
+
+                // Update icon preview
+                bool isPlayer1 = IsCurrentPlayerOne();
+                uiManager.UpdateMelodyPreview(currentMelodyNotes, isPlayer1);
 
                 // Hide confirm button if melody is no longer complete
                 if (currentMelodyNotes.Count < MELODY_SIZE)
                 {
                     confirmButton.SetActive(false);
                 }
+
+                // Hide playback if no notes
+                if (currentMelodyNotes.Count == 0)
+                {
+                    playbackButton.SetActive(false);
+                }
             }
         }
     }
 
-    public void OnConfirmButtonClicked()
+    // Called by Playback button - plays current melody
+    public void OnPlaybackButtonClicked()
     {
-        switch (currentPhase)
+        if (currentMelodyNotes.Count == 0)
+            return;
+
+        PlayerUI currentPlayer = GetCurrentPlayer();
+
+        if (currentPlayer != null && uiManager != null)
         {
-            case TurnPhase.Player1Chord:
-                if (selectedChord != null)
-                {
-                    currentPhase = TurnPhase.Player1Melody;
-                    UpdateTurnIndicator();
-                    ShowMelodyButtons();  // This now handles all button visibility
-                }
-                break;
+            // Convert List to array for PlayMelody
+            string[] melodyNotes = new string[currentMelodyNotes.Count];
+            for (int i = 0; i < currentMelodyNotes.Count; i++)
+            {
+                melodyNotes[i] = currentMelodyNotes[i].ToString();
+            }
 
-            case TurnPhase.Player1Melody:
-                if (currentMelodyNotes.Count == MELODY_SIZE)
-                {
-                    player1Action = new Action(
-                        selectedChord,
-                        new Melody(currentMelodyNotes.ToArray()),
-                        bs.player1
-                    );
-
-                    currentPhase = TurnPhase.Player2Chord;
-                    selectedChord = null;
-                    selectedChordName = null;
-                    currentMelodyNotes.Clear();
-                    chordDisplayText.text = "Chord: Not selected";
-                    melodyDisplayText.text = "Melody: (0/4)";
-                    UpdateTurnIndicator();
-                    ShowChordButtons();  // This now handles all button visibility
-                }
-                break;
-
-            case TurnPhase.Player2Chord:
-                if (selectedChord != null)
-                {
-                    currentPhase = TurnPhase.Player2Melody;
-                    UpdateTurnIndicator();
-                    ShowMelodyButtons();  // This now handles all button visibility
-                }
-                break;
-
-            case TurnPhase.Player2Melody:
-                if (currentMelodyNotes.Count == MELODY_SIZE)
-                {
-                    player2Action = new Action(
-                        selectedChord,
-                        new Melody(currentMelodyNotes.ToArray()),
-                        bs.player2
-                    );
-
-                    ResolveBattle();
-                }
-                break;
+            uiManager.PlayMelody(melodyNotes, currentPlayer);
         }
     }
 
+    // Called by Confirm button
+    public void OnConfirmButtonClicked()
+    {
+        if (currentMelodyNotes.Count != MELODY_SIZE)
+            return;
+
+        switch (currentPhase)
+        {
+            case TurnPhase.FirstPlayerMelody:
+                // First player confirms their melody
+                if (player1GoesFirst)
+                {
+                    // Player 1 is going first
+                    player1Action = new Action(
+                        new Melody(currentMelodyNotes.ToArray()),
+                        bs.player1
+                    );
+                }
+                else
+                {
+                    // Player 2 is going first
+                    player2Action = new Action(
+                        new Melody(currentMelodyNotes.ToArray()),
+                        bs.player2
+                    );
+                }
+
+                // Clear preview icons
+                uiManager.ClearAllPreviewIcons();
+
+                // Move to second player's turn
+                currentPhase = TurnPhase.SecondPlayerMelody;
+                currentMelodyNotes.Clear();
+                UpdateTurnIndicator();
+                ShowMelodyButtons();
+                break;
+
+            case TurnPhase.SecondPlayerMelody:
+                // Second player confirms their melody
+                if (player1GoesFirst)
+                {
+                    // Player 2 is going second
+                    player2Action = new Action(
+                        new Melody(currentMelodyNotes.ToArray()),
+                        bs.player2
+                    );
+                }
+                else
+                {
+                    // Player 1 is going second
+                    player1Action = new Action(
+                        new Melody(currentMelodyNotes.ToArray()),
+                        bs.player1
+                    );
+                }
+
+                // Execute battle
+                ResolveBattle();
+                break;
+        }
+    }
 
     private void ResolveBattle()
     {
         currentPhase = TurnPhase.BattleResolution;
 
         // Hide input buttons during battle animation
-        chordButtons.SetActive(false);
         noteButtons.SetActive(false);
         confirmButton.SetActive(false);
         if (backspaceButton != null)
             backspaceButton.SetActive(false);
+        if (playbackButton != null)
+            playbackButton.SetActive(false);
 
-        // Execute the battle (game logic)
+        // Always pass actions as (player1Action, player2Action) to battle logic
         bs.battle(player1Action, player2Action);
 
-        // Trigger UI animations
+        // Trigger UI animations - ALWAYS pass in (player1Action, player2Action) order
+        // UIManager will handle displaying them in the correct turn order
         if (uiManager != null)
         {
-            uiManager.DisplayBattleResults(bs.last_update, player1Action, player2Action);
+            uiManager.DisplayBattleResults(bs.last_update, player1Action, player2Action, player1GoesFirst);
         }
-
-        // Update text display
-        UpdateDisplay();
 
         // Check for game over
         if (bs.player1.health <= 0 || bs.player2.health <= 0)
         {
-            Invoke("HandleGameOver", 3f);
+            Invoke("HandleGameOver", 8f);
         }
         else
         {
-            Invoke("StartNextTurn", 3f);
+            Invoke("StartNextTurn", 8f);
         }
     }
 
-    // Update HandleGameOver to hide backspace
+    private void StartNextTurn()
+    {
+        // Toggle who goes first for the next round
+        player1GoesFirst = !player1GoesFirst;
+
+        // Always start at first player phase
+        currentPhase = TurnPhase.FirstPlayerMelody;
+
+        currentMelodyNotes.Clear();
+        UpdateTurnIndicator();
+        ShowMelodyButtons();
+
+        // Make sure all icons are cleared for new turn
+        uiManager.ClearAllPreviewIcons();
+    }
+
     private void HandleGameOver()
     {
-        chordButtons.SetActive(false);
         noteButtons.SetActive(false);
         confirmButton.SetActive(false);
         if (backspaceButton != null)
             backspaceButton.SetActive(false);
+        if (playbackButton != null)
+            playbackButton.SetActive(false);
 
         if (bs.player1.health <= 0 && bs.player2.health <= 0)
         {
@@ -388,42 +373,14 @@ public class ButtonInputReader : MonoBehaviour
         }
     }
 
-    private void StartNextTurn()
-    {
-        currentPhase = TurnPhase.Player1Chord;
-        selectedChord = null;
-        selectedChordName = null;
-        currentMelodyNotes.Clear();
-        chordDisplayText.text = "Chord: Not selected";
-        melodyDisplayText.text = "Melody: (0/4)";
-        UpdateTurnIndicator();
-        ShowChordButtons();
-    }
-
-    private void ShowChordButtons()
-    {
-        chordButtons.SetActive(true);
-        noteButtons.SetActive(false);
-        confirmButton.SetActive(false);
-        if (backspaceButton != null)
-            backspaceButton.SetActive(false);  // Hide backspace during chord selection
-    }
-
     private void ShowMelodyButtons()
     {
-        chordButtons.SetActive(false);
         noteButtons.SetActive(true);
         confirmButton.SetActive(false);
         if (backspaceButton != null)
-            backspaceButton.SetActive(true);  // Show backspace during melody selection
-    }
-
-    private void UpdateDisplay()
-    {
-        if (displayText != null)
-        {
-            displayText.text = $"P1 Health: {bs.player1.health:F0} | P2 Health: {bs.player2.health:F0}";
-        }
+            backspaceButton.SetActive(true);
+        if (playbackButton != null)
+            playbackButton.SetActive(false);
     }
 
     private void UpdateTurnIndicator()
@@ -432,49 +389,23 @@ public class ButtonInputReader : MonoBehaviour
 
         switch (currentPhase)
         {
-            case TurnPhase.Player1Chord:
-                turnIndicatorText.text = "Player 1: Select a Chord";
+            case TurnPhase.FirstPlayerMelody:
+                if (player1GoesFirst)
+                    turnIndicatorText.text = "Player 1: Select Melody (4 notes)";
+                else
+                    turnIndicatorText.text = "Player 2: Select Melody (4 notes)";
                 break;
-            case TurnPhase.Player1Melody:
-                turnIndicatorText.text = "Player 1: Select Melody (4 notes)";
+
+            case TurnPhase.SecondPlayerMelody:
+                if (player1GoesFirst)
+                    turnIndicatorText.text = "Player 2: Select Melody (4 notes)";
+                else
+                    turnIndicatorText.text = "Player 1: Select Melody (4 notes)";
                 break;
-            case TurnPhase.Player2Chord:
-                turnIndicatorText.text = "Player 2: Select a Chord";
-                break;
-            case TurnPhase.Player2Melody:
-                turnIndicatorText.text = "Player 2: Select Melody (4 notes)";
-                break;
+
             case TurnPhase.BattleResolution:
                 turnIndicatorText.text = "Battle Resolution...";
                 break;
         }
-    }
-
-    private void UpdateChordDisplay(string chordName)
-    {
-        if (chordDisplayText == null) return;
-
-        if (string.IsNullOrEmpty(chordName))
-        {
-            chordDisplayText.text = "Chord: Not selected";
-        }
-        else
-        {
-            chordDisplayText.text = $"Chord: {chordName}";
-        }
-    }
-
-    private void UpdateMelodyDisplay()
-    {
-        if (melodyDisplayText == null) return;
-
-        string display = "Melody: ";
-        foreach (MusicalNote note in currentMelodyNotes)
-        {
-            display += note.ToString() + " ";
-        }
-        display += $"({currentMelodyNotes.Count}/{MELODY_SIZE})";
-
-        melodyDisplayText.text = display;
     }
 }

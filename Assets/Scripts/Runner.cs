@@ -12,8 +12,8 @@ public class Runner : MonoBehaviour
     {
         bs.init();
         Debug.Log("Running test code");
-        Action a1 = new Action(new Chord(0, 1, 3), new Melody(3, 3, 3, 3));
-        Action a2 = new Action(new Chord(0, 1, 3), new Melody(6, 6, 6, 6));
+        Action a1 = new Action(new Melody(3, 3, 3, 3));
+        Action a2 = new Action(new Melody(6, 6, 6, 6));
         Player p1 = bs.player1;
         Player p2 = bs.player2;
         p1.enemy = p2;

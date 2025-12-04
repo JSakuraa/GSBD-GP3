@@ -3,87 +3,43 @@ using MusicDefinitions;
 using UnityEngine;
 
 public class Actionresolution : MonoBehaviour
-//decides which note wins in a note vs note duel
 {
     //fixing note effect to match mapping
-    public static NoteEffect[] note_effects= {
-        NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Heal,NoteEffect.LifeSteal,NoteEffect.Damage,NoteEffect.Heal,NoteEffect.Damage
+    public static NoteEffect[] note_effects = {
+        NoteEffect.Heal,
+        NoteEffect.LifeSteal,
+        NoteEffect.LifeSteal,
+        NoteEffect.Heal,
+        NoteEffect.Heal,
+        NoteEffect.Damage,
+        NoteEffect.Damage
     };
 
     //fixed matrix to match the note enum in definitions
     static double[,] base_resolution_matrix = {
-    // C   D   E   F   G   A   B
-    {  0, -1,  0, -1,  1,  0,  1}, //C 
-    {  1,  0,  1,  0, -1,  1, -1}, //D 
-    {  0, -1,  0, -1,  1,  0,  1}, //E 
-    {  1,  0,  1,  0, -1,  1, -1}, //F 
-    { -1,  1, -1,  1,  0, -1,  0}, //G 
-    {  0, -1,  0, -1,  1,  0,  1}, //A 
-    { -1,  1, -1,  1,  0, -1,  0}  //B 
-};
+        // C   D   E   F   G   A   B
+        {  0, -1,  0, -1,  1,  0,  1}, //C 
+        {  1,  0,  1,  0, -1,  1, -1}, //D 
+        {  0, -1,  0, -1,  1,  0,  1}, //E 
+        {  1,  0,  1,  0, -1,  1, -1}, //F 
+        { -1,  1, -1,  1,  0, -1,  0}, //G 
+        {  0, -1,  0, -1,  1,  0,  1}, //A 
+        { -1,  1, -1,  1,  0, -1,  0}  //B 
+    };
 
-    public static void act()
-    // testing function
-    {
-        Chord c = new Chord(MusicalNote.A, MusicalNote.B, MusicalNote.C);
 
-        Melody m = new Melody(MusicalNote.A, MusicalNote.B, MusicalNote.C, MusicalNote.D);
-        print("haha!");
-        print(c);
-        print(m);
-        Action a = new Action(c, m);
-        c.notes[2] = MusicalNote.F;
-        print(a);
-        MusicalNote[] xxx = { MusicalNote.A, MusicalNote.F, MusicalNote.D };
-        Chord c2 = new Chord(xxx);
-        MusicalNote[] xxx2 = { MusicalNote.G, MusicalNote.A, MusicalNote.C, MusicalNote.A };
-        Melody m2 = new Melody(xxx2);
-        Action a2 = new Action(c2, m2);
-        print(a2);
-        print($"{a.melody.notes[1]} and {a2.melody.notes[1]} resolve to {base_resolution_matrix[(int)a.melody.notes[1], (int)a2.melody.notes[1]]}");
-        string enumString = "A";
-        MusicalNote note = (MusicalNote)System.Enum.Parse(typeof(MusicalNote), enumString);
-        print(MusicalNote.A == note);
-        print(GenerateArrayDefinitionString1D(resolve_actions(a, a2)));
-        
-    }
-    public static Action[] getsamepleActions()
-    {
-        Chord c = new Chord(MusicalNote.A, MusicalNote.B, MusicalNote.C);
-        Melody m = new Melody(MusicalNote.A, MusicalNote.B, MusicalNote.C, MusicalNote.D);
-        Action a = new Action(c, m);
-
-        Chord c2 = new Chord(MusicalNote.A, MusicalNote.B, MusicalNote.C);
-        Melody m2 = new Melody(MusicalNote.A, MusicalNote.B, MusicalNote.C, MusicalNote.D);
-        Action a2 = new Action(c, m);
-        return new Action[] { a,a2 };
-    }
     public static double[] resolve_actions(Action a1, Action a2)
     {
+        // Use base resolution matrix directly (no chord modifications)
         double[,] temp_res_matrix = base_resolution_matrix.Clone() as double[,];
-        /*
-        temp_res_matrix[0, 0] = 1000;
-        print(GenerateArrayDefinitionString(base_resolution_matrix));
-        print(GenerateArrayDefinitionString(temp_res_matrix));
-        print(GenerateArrayDefinitionString1D(resolve_melodies(a1.melody, a2.melody, temp_res_matrix)));
-        temp_res_matrix[0, 0] = 0;
-        print("Player 1 action:");
-        print(a1);
-        print("Player 2 action:");
-        print(a2);
-        print("base interactions:");
-        print(GenerateArrayDefinitionString(temp_res_matrix));
-        print("Applying chord effects");
-        */
-        chord_effects(a1.chord, a2.chord, temp_res_matrix);
-        Debug.Log($"Post chord alteration resolutions: \n{GenerateArrayDefinitionString(temp_res_matrix)}");
+
+        Debug.Log($"Using base resolution matrix (no chord effects):\n{GenerateArrayDefinitionString(temp_res_matrix)}");
+
         double[] outputs = resolve_melodies(a1.melody, a2.melody, temp_res_matrix);
-        //print("melody battle outputs");
-        //print(GenerateArrayDefinitionString1D(outputs));
+
         return outputs;
-
-
     }
+
     public static double resolve_notes(MusicalNote n1, MusicalNote n2, double[,] matrix)
     {
         return matrix[(int)n1, (int)n2];
@@ -94,71 +50,53 @@ public class Actionresolution : MonoBehaviour
         double[] outcomes = new double[m1.notes.Length];
         for (int i = 0; i < m1.notes.Length; i++)
         {
-            outcomes[i] = matrix[(int)m1.notes[i], (int)m2.notes[i]];
+            outcomes[i] = matrix[(int)m2.notes[i], (int)m1.notes[i]];
         }
         return outcomes;
     }
-    public static void chord_effects(Chord c1, Chord c2, double[,] matrix)
-    {
-        for (int i = 0; i < c1.notes.Length; i++)
-        {
-            for (int j = 0; j < matrix.GetLength(0); j++)
-            {
-                matrix[(int)c1.notes[i], j] += 0.5;
-                matrix[j, (int)c2.notes[i]] -= 0.5;
 
-            }
-
-        }
-    }
-
-    public static string GenerateArrayDefinitionString<T>(T[,] matrix) //thank you Google AI
+    public static string GenerateArrayDefinitionString<T>(T[,] matrix)
     {
         int rows = matrix.GetLength(0);
         int cols = matrix.GetLength(1);
         var sb = new System.Text.StringBuilder();
 
-        sb.Append("{"); // Outer opening brace for the whole array
+        sb.Append("{");
 
         for (int i = 0; i < rows; i++)
         {
-            sb.Append("{"); // Inner opening brace for the row
+            sb.Append("{");
 
             for (int j = 0; j < cols; j++)
             {
                 sb.Append(matrix[i, j]);
-                // Add a comma if it's not the last element in the row
                 if (j < cols - 1)
                 {
                     sb.Append(", ");
                 }
             }
 
-            sb.Append("}"); // Inner closing brace for the row
+            sb.Append("}");
 
-            // Add a comma and a newline if it's not the last row
             if (i < rows - 1)
             {
                 sb.Append(",\n ");
             }
         }
 
-        sb.Append("}"); // Outer closing brace
+        sb.Append("}");
 
         return sb.ToString();
     }
-    
-public static string GenerateArrayDefinitionString1D<T>(T[] array)//thank you Google AI
+
+    public static string GenerateArrayDefinitionString1D<T>(T[] array)
     {
         if (array == null)
         {
             return "null";
         }
 
-        // Use String.Join to efficiently concatenate all elements with a comma and space
         string joinedElements = System.String.Join(", ", array);
-
-        // Wrap the joined elements in curly braces
         return $"{{{joinedElements}}}";
     }
 
@@ -166,17 +104,18 @@ public static string GenerateArrayDefinitionString1D<T>(T[] array)//thank you Go
     void quicktest()
     {
         Debug.Log("functionality test");
-        // Add your editor-specific logic here
-        //act();
-        print("get actions");
-        Action[] a=getsamepleActions();
-        Action a1 = a[0];
-        Action a2 = a[1];
-        print(a1);
-        print(a2);
 
+        // Simple test without chords
+        Melody m1 = new Melody(MusicalNote.C, MusicalNote.E, MusicalNote.G, MusicalNote.A);
+        Melody m2 = new Melody(MusicalNote.D, MusicalNote.F, MusicalNote.A, MusicalNote.C);
+
+        Action a1 = new Action(m1);
+        Action a2 = new Action(m2);
+
+        Debug.Log($"Action 1: {a1}");
+        Debug.Log($"Action 2: {a2}");
+
+        double[] results = resolve_actions(a1, a2);
+        Debug.Log($"Battle results: {GenerateArrayDefinitionString1D(results)}");
     }
-
-
-
 }
