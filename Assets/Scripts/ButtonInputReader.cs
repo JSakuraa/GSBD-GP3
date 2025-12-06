@@ -3,6 +3,7 @@ using MusicDefinitions;
 using UnityEngine;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class ButtonInputReader : MonoBehaviour
 {
@@ -366,10 +367,12 @@ public class ButtonInputReader : MonoBehaviour
         else if (bs.player1.health <= 0)
         {
             turnIndicatorText.text = "Player 2 Wins!";
+            SceneManager.LoadScene("P2Wins");
         }
         else
         {
             turnIndicatorText.text = "Player 1 Wins!";
+            SceneManager.LoadScene("P1Wins");
         }
     }
 

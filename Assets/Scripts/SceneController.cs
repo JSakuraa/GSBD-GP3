@@ -10,15 +10,47 @@ public class SceneController : MonoBehaviour
 
     public void LoadGameScene()
     {
-        SceneManager.LoadScene("NewGameScene");
+        SceneManager.LoadScene("GameSceneV3");
     }
 
     public void LoadGameOverScreen()
     {
         SceneManager.LoadScene("GameOverScreen");
     }
-    public void debugprint(string s)
+
+    public void LoadCutscene()
     {
-        print(s);
+        SceneManager.LoadScene("Cutscene");
+    }
+
+    public void LoadP1Wins()
+    {
+        SceneManager.LoadScene("P1Wins");
+    }
+
+    public void LoadP2Wins()
+    {
+        SceneManager.LoadScene("P2Wins");
+    }
+
+    public void LoadTutorial()
+    {
+        SceneManager.LoadScene("Tutorial");
+    }
+    
+    public void LoadMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+
+        Debug.Log("Game is quitting...");
     }
 }
