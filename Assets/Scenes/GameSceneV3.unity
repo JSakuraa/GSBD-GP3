@@ -1418,8 +1418,8 @@ MonoBehaviour:
   noteE: {fileID: 8300000, guid: 0ba88fc1c132867468eabb882726dc5e, type: 3}
   noteF: {fileID: 8300000, guid: a95a7ef99141dcc4b81feecae757438b, type: 3}
   noteG: {fileID: 8300000, guid: 3921f033c3878974a95d3ad0754bc772, type: 3}
-  noteA: {fileID: 8300000, guid: 8add2a2761b06be4d84a29d1fb94fb27, type: 3}
-  noteB: {fileID: 8300000, guid: 482bfef324a59e348be820ec8e50e2a5, type: 3}
+  noteA: {fileID: 8300000, guid: 639e82f71a687544782b4a28e0e581eb, type: 3}
+  noteB: {fileID: 8300000, guid: 0cc884e06dfcebc47acfb62c2cca0c41, type: 3}
 --- !u!4 &449714840
 Transform:
   m_ObjectHideFlags: 0
@@ -2096,7 +2096,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 10758, guid: 0000000000000000f000000000000000, type: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
